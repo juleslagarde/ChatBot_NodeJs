@@ -4,6 +4,8 @@
 	"description": "ChatBot base on rivescript",
 	"main": "start.js",
 	"scripts": {
+		"start": "node start.js",
+		"watch": "nodemon start.js",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"repository": {
