@@ -26,7 +26,8 @@
 	"homepage": "https://github.com/juleslagarde/ChatBot_NodeJs#readme",
 	"dependencies": {
 		"dotenv": "^8.0.0",
-		"express": "^4.16.4",
+		"express": "^4.17.0",
+		"nodemon": "^1.19.0",
 		"rivescript": "^2.0.0"
 	}
 }
