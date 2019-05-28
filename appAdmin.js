@@ -8,7 +8,7 @@ const appAdmin = express();
 
 appAdmin.use(express.json());
 
-const elements = ["cerveau","chatbot"];
+const elements = ["cerveaux","chatbot", "interfaces"];
 for(route of elements) {
     appAdmin.use("/rest/"+route, require("./routes/" + route));
 }

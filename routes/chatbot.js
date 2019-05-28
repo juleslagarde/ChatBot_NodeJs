@@ -1,58 +1,74 @@
+var bodyParser = require('body-parser');
 const express = require('express');
+
+const BASE_BOT_PORT=4001;
+
 const router = express.Router();
 
-let cerveaux = [];
-let chatBots = [];
+let chatbots = global.chatbots = [];
+let cerveaux = global.cerveaux = ["simple"];
+let interfaces = global.interfaces = ["Web", "Mastodon", "Discord"];
 
 const RiveScript = require("rivescript")
-
 function loading_error(error, filename, lineno) {
   console.log("Error when loading files: " + error);
-}
 
+}
 for(let i=0; i<2; i++){
-  let cerveau = new RiveScript({utf8: true});
-  cerveau.display={id:i, status:"off", cerveau:"steve", url:"http://localhost:"+(1001+i)};
-  cerveau.loadDirectory("cerveaux").then(()=>{
-    cerveau.sortReplies();
-    console.log("cerveau finished loading")
+  let rive = new RiveScript({utf8: true});
+  rive.display={id:i, status:"off"};
+  rive.loadFile("cerveaux/simple.rive").then(()=>{
+    rive.sortReplies();
+    console.log("rive finished loading")
   }).catch(loading_error);
-  cerveaux.push(cerveau);
+  let bot = {rive, web:null, mastodon:null, discord:null,
+    info:{id:i, cerveau:"steve", url:"http://localhost:"+(BASE_BOT_PORT+i),  web:"off", mastodon:"off", discord:"off",}};
+  chatbots.push(bot);
+  setupWeb(i);
 }
 
-
-function createAppBot(name, cerveau){
+function setupWeb(id){
 
   const appBot = express();
-
-  appBot.use(express.json());
+  appBot.use(bodyParser.json()); // support json encoded bodies
+  appBot.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
   appBot.post("/", (req, res)=>{
-    res.send("working")
+    // req.params["message"]=req.params["message"].replace(/_/g, " ");
+    console.log("POST "+JSON.stringify(req.body));
+
+    chatbots[id].rive.reply(req.body.login, req.body.message).then(function(reply) {
+      res.send(reply);
+    });
   });
 
-  let port =1000+chatBots.length;
+  let port =BASE_BOT_PORT+id;
   appBot.listen(port, ()=>{
-    console.log("bot '"+name+"' has started running on port "+port);
+    console.log("bot '"+chatbots[id].name+"' has started running on port "+port);
   });
 
-  chatBots.push(appBot);
-  return appBot;
+  chatbots[id].web = appBot;
+  chatbots[id].info.web = "on";
 }
 
 // route for user logout
 router.get('/', (req, res) => {
-  res.send(cerveaux.map((x)=>x.display))
+  res.send(chatbots.map((x)=>x.info))
+});
+// route for user logout
+router.post('/', (req, res) => {
+  res.send("todo creation de chatbot")//todo
 });
 
-// route for user logout //todo move this on each port
-router.get('/:botID/say/:message', (req, res) => {
-  req.params["message"]=req.params["message"].replace(/_/g, " ");
-  console.log("GET "+JSON.stringify(req.params));
-  let id = parseInt(req.params["botID"]);
-  cerveaux[id].reply("local", req.params["message"]).then(function(reply) {
-    res.send(reply);
-  });
-});
+// // route for user logout //todo move this on each port
+// router.get('/:botID/say/:message', (req, res) => {
+//   req.params["message"]=req.params["message"].replace(/_/g, " ");
+//   console.log("GET "+JSON.stringify(req.params));
+//   let id = parseInt(req.params["botID"]);
+//
+//   chatbots[id].rive.reply("local", req.params["message"]).then(function(reply) {
+//     res.send(reply);
+//   });
+// });
 
 module.exports = router;
