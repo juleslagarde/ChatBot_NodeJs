@@ -30,17 +30,13 @@
   }
 
   function sendMessage(){
-    addMessage($login.val(), $message.val());
-    let message = "login="+$login.val()+"&message="+ $message.val();
-    $.ajax({
-      type: "POST",
-      url: $url.val(),
-      data: message,
-      success: success
-    });
-    function success(data) {
+  	addMessage($login.val(), $message.val());
+  	$.post($url.val(), {
+  		login: $login.val(),
+  		message: $message.val(),
+    }, function(data, status) {
       addMessage("bot", data)
-    }
+    });
   }
 </script>
 </body>
