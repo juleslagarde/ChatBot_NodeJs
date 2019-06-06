@@ -36,13 +36,10 @@
       type: "POST",
       url: $url.val(),
       data: message,
-      success: success,
-      dataType: "x-www-form-urlencoded"
+      success: success
     });
     function success(data) {
-      console.log(data);
-      if(data.type==="notif")
-        addMessage("bot", data.message)
+      addMessage("bot", data)
     }
   }
 </script>

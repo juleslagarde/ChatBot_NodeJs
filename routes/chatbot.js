@@ -1,5 +1,6 @@
 const bodyParser = require('body-parser');
 const express = require('express');
+const cors = require('cors');
 
 const BASE_BOT_PORT = 4001;
 
@@ -65,15 +66,15 @@ function setupWeb(id) {
 
   const appBot = express();
   appBot.use(bodyParser.json()); // support json encoded bodies
-  appBot.use(bodyParser.urlencoded({
-    extended: true
-  })); // support encoded bodies
+  appBot.use(bodyParser.urlencoded({extended: true})); // support encoded bodies
+  appBot.use(cors()); // support encoded bodies
 
   appBot.post("/", (req, res) => {
+    let {login, message} = req.body;
     // req.params["message"]=req.params["message"].replace(/_/g, " ");
     console.log("POST " + JSON.stringify(req.body));
 
-    chatbots[id].rive.reply(req.body.login, req.body.message).then(function(reply) {
+    chatbots[id].rive.reply(login, message).then(function(reply) {
       res.send(reply);
     });
   });
