@@ -124,7 +124,10 @@ router.post('/:id', (req, res) => {
     chatbots[id].info.web="off";
     modified.push("web:off")
   }
-  res.send("bot '" + id + "' modified (" + modified.join(",") + ")");
+  if(modified.length===0)
+  	res.send("bot '" + id + "' not modified");
+  else
+  	res.send("bot '" + id + "' modified (" + modified.join(",") + ")");
 });
 
 
