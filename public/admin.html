@@ -28,21 +28,21 @@
     <div class="modal-content">
       <span class="close">&times;</span>
       <div class="form_container">
-        <form action="javascript:updateChatBot()" method="post">
-          <label>Id</label>
-          <input id="id_modal" disabled=true> <br>
-          <label>Name</label>
-          <input id="name_modal" disabled=true> <br>
-          <label>Cerveau</label>
-          <select id="cerveau_modal"> </select> <br>
-          <label>Url</label>
-          <input id="url_modal" disabled=true> <br>
-          <label> Web </label>
-          <input type="radio" name="group_service" id="web_modal"> <br>
-          <label> Mastodon </label>
-          <input type="radio" name="group_service" id="mastodon_modal"> <br>
-          <label> Discord </label>
-          <input type="radio" name="group_service" id="discord_modal"> <br>
+        <form id="form_update" action="javascript:updateChatBot()" method="post">
+          <label for="id_modal">Id</label>
+          <input id="id_modal" name="id" disabled> <br>
+          <label for="name_modal">Name</label>
+          <input id="name_modal" name="name" disabled> <br>
+          <label for="cerveau_modal">Cerveau</label>
+          <select id="cerveau_modal" name="cerveau"> </select> <br>
+          <label for="url_modal">Url</label>
+          <input id="url_modal" name="url" disabled> <br>
+          <label for="web_modal"> Web </label>
+          <input type="checkbox" name="web" id="web_modal"> <br>
+          <label for="mastodon_modal"> Mastodon </label>
+          <input type="checkbox" name="mastodon" id="mastodon_modal"> <br>
+          <label for="discord_modal"> Discord </label>
+          <input type="checkbox" name="discord" id="discord_modal"> <br>
           <button type="submit">Valider</button>
         </form>
       </div>
@@ -60,7 +60,7 @@
   let web_modal = document.getElementById("web_modal")
   let mastodon_modal = document.getElementById("mastodon_modal")
   let discord_modal = document.getElementById("discord_modal")
-  let cerveaux = []
+  let cerveaux = [];
 
   $.get("rest/cerveaux", function(data, status) {
     cerveaux = data
@@ -131,14 +131,7 @@
 
   function updateChatBot() {
     let id = id_modal.value
-    let cerveau = cerveau_modal.options[cerveau_modal.selectedIndex].value
-    let web = web_modal.checked ? "on" : "off"
-    // console.log("id : " + id);
-    // console.log("cerveau : " + cerveau);
-    // console.log("web : " + web);
-    $.post("rest/chatbot/" + id, {
-      cerveau: cerveau
-    }, function(data, status) {
+    $.post("rest/chatbot/" + id, $("#form_update").serialize() , function(data, status) {
       console.log("callback");
       modal.style.display = "none"
       updateChatbotTable()

@@ -40,7 +40,7 @@ function createChatbot(name) {
   return id;
 }
 
-function addCerveau(id, cerveau) {
+function setCerveau(id, cerveau) {
   let rive = new RiveScript({
     utf8: true
   });
@@ -57,8 +57,8 @@ function addCerveau(id, cerveau) {
 }
 
 for (let i = 0; i < 2; i++) {
-  var id = createChatbot("Steeve");
-  addCerveau(id, "simple")
+  let id = createChatbot("Steeve");
+  setCerveau(id, "simple")
   setupWeb(id);
 }
 
@@ -80,50 +80,52 @@ function setupWeb(id) {
   });
 
   let port = BASE_BOT_PORT + id;
-  appBot.listen(port, () => {
+  let server = appBot.listen(port, () => {
     console.log("bot '" + id + "' has started running on port " + port);
   });
 
-  chatbots[id].web = appBot;
+  chatbots[id].web = server;
   chatbots[id].info.web = "on";
 }
 
+function chatbotInfos() {
+  return Object.values(chatbots).map((x) => x.info);
+}
+
 router.get('/', (req, res) => {
-  res.send(Object.values(chatbots).map((x) => x.info))
+  res.send(chatbotInfos())
 });
 
 router.post('/', (req, res) => {
   let name = (req.body.name !== '') ? req.body.name : "Steeve"
-  var id = createChatbot(name)
-  addCerveau(id, "simple")
-  notif(res, "bot created (id:" + id + ")");
+  let id = createChatbot(name)
+  setCerveau(id, "simple")
+  res.send("bot '"+name+"' created (id:" + id + ")");
 });
 
 router.post('/:id', (req, res) => {
-  var modified = [];
+  console.log(req.body);
+  let modified = [];
+  let id = parseInt(req.params.id);
+  if(chatbots[id]===undefined)
+    res.send("chatbot '"+id+"' not found");
+  console.log(id, chatbots[id].info);
   if (req.body.cerveau !== undefined && chatbots[id].info.cerveau !== req.body.cerveau) {
-    addCerveau(id, req.body.cerveau);
+    setCerveau(id, req.body.cerveau);
     modified.push("cerveau:" + req.body.cerveau)
   }
   if (req.body.web !== undefined && chatbots[id].info.web !== req.body.web) {
     setupWeb(id);
     modified.push("web:on")
   }
-  notif(res, "bot '" + id + "' modified (" + modified.join(",") + ")");
+  if (req.body.web === undefined && chatbots[id].info.web === "on") {
+    chatbots[id].web.close();
+    chatbots[id].web=null;
+    chatbots[id].info.web="off";
+    modified.push("web:off")
+  }
+  res.send("bot '" + id + "' modified (" + modified.join(",") + ")");
 });
 
-function notif(res, message) {
-  res.send(JSON.stringify({
-    type: "notif",
-    message: message
-  }));
-}
-
-function error(res, message) {
-  res.send(JSON.stringify({
-    type: "error",
-    message: message
-  }));
-}
 
 module.exports = router;
