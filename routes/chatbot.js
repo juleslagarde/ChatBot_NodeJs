@@ -102,11 +102,11 @@ router.post('/:id', (req, res) => {
   var modified = [];
   if (req.body.cerveau !== undefined && chatbots[id].info.cerveau !== req.body.cerveau) {
     addCerveau(id, req.body.cerveau);
-    modified.append("cerveau:" + cerveau)
+    modified.push("cerveau:" + req.body.cerveau)
   }
   if (req.body.web !== undefined && chatbots[id].info.web !== req.body.web) {
     setupWeb(id);
-    modified.append("web:on")
+    modified.push("web:on")
   }
   notif(res, "bot '" + id + "' modified (" + modified.join(",") + ")");
 });
