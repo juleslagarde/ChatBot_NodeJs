@@ -1,13 +1,73 @@
 <!doctype html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>ChatBot</title>
-</head>
-<body>
 
+<head>
+  <meta charset="UTF-8">
+  <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+  <title>Administration</title>
+</head>
+
+<body>
+  <div>
+    Créer un chatbot :
+    <form action="javascript:addChatbot()" method="post">
+      <input type="text" name="name" id="name" placeholder="Steeve">
+      <button type="submit">Créer</button>
+    </form>
+  </div>
+
+  <div id="table_div">
+    Chatbots :
+  </div>
 </body>
+
+<script>
+  let $table = $("#table")
+  let cerveaux = [];
+
+  $.get("rest/cerveaux", function(data, status) {
+    cerveaux = data
+  })
+
+  function updateChatbotTable() {
+    let table = document.getElementById("table")
+    if (table != null)
+      document.getElementById("table_div").removeChild(table)
+    $.get("rest/chatbot", function(data, status) {
+      let chatbots = Object.values(data)
+      createChatbotTable(chatbots)
+    })
+  }
+
+  function createChatbotTable(chatbots) {
+    let table = document.createElement('table')
+    table.id = "table"
+    table.style.border = '1px solid black'
+    let tr = table.insertRow()
+    for (let property in chatbots[0]) {
+      let td = tr.insertCell()
+      td.appendChild(document.createTextNode(property))
+    }
+    for (let i = 0; i < chatbots.length; i++) {
+      let tr = table.insertRow()
+      for (let property in chatbots[i]) {
+        let td = tr.insertCell()
+        td.appendChild(document.createTextNode(chatbots[i][property]))
+      }
+    }
+    document.getElementById("table_div").appendChild(table);
+  }
+
+  function addChatbot() {
+    let name = document.getElementById("name").value
+    $.post("rest/chatbot", {
+      name: name
+    }, function(data, status) {
+      updateChatbotTable()
+    })
+  }
+
+  updateChatbotTable();
+</script>
+
 </html>

@@ -1,16 +1,16 @@
 const express = require('express');
 const path = require('path');
-
+const bodyParser = require('body-parser')
 const appAdmin = express();
 
-// appAdmin.set('views', path.join(__dirname, 'views'));
-// appAdmin.set('view engine', 'pug');
+// parse application/x-www-form-urlencoded
+appAdmin.use(bodyParser.urlencoded({ extended: false }))
+// parse application/json
+appAdmin.use(bodyParser.json())
 
-appAdmin.use(express.json());
-
-const elements = ["cerveaux","chatbot", "interfaces"];
-for(route of elements) {
-    appAdmin.use("/rest/"+route, require("./routes/" + route));
+const services = ["cerveaux", "chatbot", "interfaces"];
+for (service of services) {
+  appAdmin.use("/rest/" + service, require("./routes/" + service));
 }
 
 appAdmin.use(express.static('public'));
