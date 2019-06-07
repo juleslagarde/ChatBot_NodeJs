@@ -1,6 +1,7 @@
 const bodyParser = require('body-parser');
 const express = require('express');
 const cors = require('cors');
+const Mastodon = require('mastodon-api');
 
 const BASE_BOT_PORT = 4001;
 
@@ -25,6 +26,7 @@ function createChatbot(name) {
     rive: null,
     web: null,
     mastodon: null,
+    mastodon_handler: null,
     discord: null,
     info: {
       id: id,
@@ -62,6 +64,53 @@ for (let i = 0; i < 2; i++) {
   setupWeb(id);
 }
 
+function serviceMastodon(id, enable) {
+  let chatbot = chatbots[id]
+  if (enable != chatbot.info.mastodon) {
+    chatbot.info.mastodon = enable
+    if (enable == "on") {
+      let M = new Mastodon({
+        client_key: '4749211550972535eff164d3b3c28b92cf6f7251cc8f3154bb4c263bdf1c1672',
+        client_secret: 'c5527468b6fec34186620ed2d67e8dc8687d5df50e4ac5fb41b41e94771576b9',
+        access_token: 'cecdfdbcbddbc493a373a337edcd91695151a03491d1ec2fe0e4ba0cd659ffaf',
+        timeout_ms: 60 * 1000, // optional HTTP request timeout to apply to all requests.
+        api_url: 'https://botsin.space/api/v1/',
+      })
+      // Start a stream from mastodon listening to notifications
+      chatbot.mastodon = M.stream('streaming/user')
+      chatbot.mastodon_handler = function(notif) {
+        if (notif.data.type == 'mention') {
+          let content = notif.data.status.content
+          let user = notif.data.account.username
+          let reply_id = notif.data.status.id
+          console.log(notif)
+          console.log(reply_id)
+          // Get message from html content
+          // Not really pretty but it works
+          // mastodon status syntax : @BotName message
+          let message = content.split('</span></a></span>')[1].split('</p>')[0]
+          // Get reply from rive and answer by posting reply to mastodon
+          chatbot.rive.reply(user, message).then(function(reply) {
+            console.log(message + " / " + reply)
+            M.post('statuses', {status: reply, in_reply_to_id : reply_id}, (err, data) => {
+              if (err) {
+                console.log(err);
+              }
+            })
+          })
+        }
+      }
+      chatbot.mastodon.on('message', chatbot.mastodon_handler)
+      console.log("Chatbot(" + id + ") mastodon service opened");
+    } else {
+      chatbot.mastodon.removeListener('message', chatbot.mastodon_handler)
+      chatbot.mastodon = null;
+      chatbot.mastodon_handler = null;
+      console.log("Chatbot(" + id + ") mastodon service closed");
+    }
+  }
+}
+
 function setupWeb(id) {
 
   const appBot = express();
@@ -82,7 +131,7 @@ function setupWeb(id) {
   let port = BASE_BOT_PORT + parseInt(id);
   // Save server to close it later if needed
   chatbots[id].web = appBot.listen(port, () => {
-    console.log("Chatbot(" + id + ") web server opened on port " + port);
+    console.log("Chatbot(" + id + ") web service opened on port " + port);
   });
   chatbots[id].info.web = "on";
 }
@@ -105,16 +154,21 @@ router.post('/:id', (req, res) => {
     addCerveau(id, req.body.cerveau);
     modified.push("cerveau:" + req.body.cerveau)
   }
-  if (req.body.web !== undefined && chatbots[id].info.web !== req.body.web) {
+  if (req.body.web && req.body.web !== chatbots[id].info.web) {
     if (req.body.web == "off") {
       chatbots[id].info.web = "off"
       chatbots[id].web.close()
-      console.log("Chatbot(" + id + ") web server closed");
+      console.log("Chatbot(" + id + ") web service closed");
     } else {
       setupWeb(id);
     }
     modified.push("web: " + req.body.web)
   }
+  if (req.body.mastodon && req.body.mastodon !== chatbots[id].info.mastodon) {
+    serviceMastodon(id, req.body.mastodon)
+    modified.push("mastodon: " + req.body.mastodon)
+  }
+
   notif(res, "bot '" + id + "' modified (" + modified.join(",") + ")");
 });
 

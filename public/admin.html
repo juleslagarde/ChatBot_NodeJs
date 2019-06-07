@@ -133,8 +133,11 @@
     let id = id_modal.value
     let cerveau = cerveau_modal.options[cerveau_modal.selectedIndex].value
     let web = web_modal.checked ? "on" : "off"
+    let mastodon = mastodon_modal.checked ? "on" : "off"
     $.post("rest/chatbot/" + id, {
-      cerveau: cerveau, web: web
+      cerveau: cerveau,
+      web: web,
+      mastodon: mastodon,
     }, function(data, status) {
       modal.style.display = "none"
       updateChatbotTable()
