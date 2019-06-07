@@ -38,11 +38,17 @@
           <label>Url</label>
           <input id="url_modal" disabled=true> <br>
           <label> Web </label>
-          <input type="radio" name="group_service" id="web_modal"> <br>
+          <input type="radio" name="group_service" id="web_modal" onclick='handleRadioClick();'> <br>
           <label> Mastodon </label>
-          <input type="radio" name="group_service" id="mastodon_modal"> <br>
+          <input type="radio" name="group_service" id="mastodon_modal" onclick='handleRadioClick();'> <br>
+          <div id="mastodon_info" style="display: none">
+            <label>Mastodon url</label>
+            <input id="mastodon_url_modal" value="https://botsin.space"> <br>
+            <label>Access token</label>
+            <input id="access_token_modal"> <br>
+          </div>
           <label> Discord </label>
-          <input type="radio" name="group_service" id="discord_modal"> <br>
+          <input type="radio" name="group_service" id="discord_modal" onclick='handleRadioClick();' disabled=true> <br>
           <button type="submit">Valider</button>
         </form>
       </div>
@@ -59,6 +65,8 @@
   let url_modal = document.getElementById("url_modal")
   let web_modal = document.getElementById("web_modal")
   let mastodon_modal = document.getElementById("mastodon_modal")
+  let access_token_modal = document.getElementById("access_token_modal")
+  let mastodon_url_modal = document.getElementById("mastodon_url_modal")
   let discord_modal = document.getElementById("discord_modal")
   let cerveaux = []
 
@@ -98,6 +106,12 @@
     document.getElementById("table_div").appendChild(table);
   }
 
+  // Handles mastodon info visibility when service mode is selected
+  function handleRadioClick() {
+    let mastodon_info = document.getElementById("mastodon_info");
+    mastodon_info.style.display = mastodon_modal.checked ? "block" : "none";
+  }
+
   function addChatbot() {
     let name = document.getElementById("name").value
     $.post("rest/chatbot", {
@@ -134,11 +148,16 @@
     let cerveau = cerveau_modal.options[cerveau_modal.selectedIndex].value
     let web = web_modal.checked ? "on" : "off"
     let mastodon = mastodon_modal.checked ? "on" : "off"
-    $.post("rest/chatbot/" + id, {
+    let params = {
       cerveau: cerveau,
       web: web,
       mastodon: mastodon,
-    }, function(data, status) {
+    }
+    if (mastodon) {
+      params.mastodon_url = $.trim(mastodon_url_modal.value)
+      params.access_token = $.trim(access_token_modal.value)
+    }
+    $.post("rest/chatbot/" + id, params, function(data, status) {
       modal.style.display = "none"
       updateChatbotTable()
     })

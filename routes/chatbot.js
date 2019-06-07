@@ -64,17 +64,16 @@ for (let i = 0; i < 2; i++) {
   setupWeb(id);
 }
 
-function serviceMastodon(id, enable) {
+function serviceMastodon(id, enable, access_token, url) {
   let chatbot = chatbots[id]
   if (enable != chatbot.info.mastodon) {
     chatbot.info.mastodon = enable
     if (enable == "on") {
+      // New mastodon connection
       let M = new Mastodon({
-        client_key: '4749211550972535eff164d3b3c28b92cf6f7251cc8f3154bb4c263bdf1c1672',
-        client_secret: 'c5527468b6fec34186620ed2d67e8dc8687d5df50e4ac5fb41b41e94771576b9',
-        access_token: 'cecdfdbcbddbc493a373a337edcd91695151a03491d1ec2fe0e4ba0cd659ffaf',
+        access_token: access_token,
         timeout_ms: 60 * 1000, // optional HTTP request timeout to apply to all requests.
-        api_url: 'https://botsin.space/api/v1/',
+        api_url: url + '/api/v1/',
       })
       // Start a stream from mastodon listening to notifications
       chatbot.mastodon = M.stream('streaming/user')
@@ -83,15 +82,12 @@ function serviceMastodon(id, enable) {
           let content = notif.data.status.content
           let user = notif.data.account.username
           let reply_id = notif.data.status.id
-          console.log(notif)
-          console.log(reply_id)
           // Get message from html content
           // Not really pretty but it works
           // mastodon status syntax : @BotName message
           let message = content.split('</span></a></span>')[1].split('</p>')[0]
           // Get reply from rive and answer by posting reply to mastodon
           chatbot.rive.reply(user, message).then(function(reply) {
-            console.log(message + " / " + reply)
             M.post('statuses', {status: reply, in_reply_to_id : reply_id}, (err, data) => {
               if (err) {
                 console.log(err);
@@ -165,7 +161,7 @@ router.post('/:id', (req, res) => {
     modified.push("web: " + req.body.web)
   }
   if (req.body.mastodon && req.body.mastodon !== chatbots[id].info.mastodon) {
-    serviceMastodon(id, req.body.mastodon)
+    serviceMastodon(id, req.body.mastodon, req.body.access_token, req.body.mastodon_url)
     modified.push("mastodon: " + req.body.mastodon)
   }
 
