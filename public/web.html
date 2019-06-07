@@ -1,47 +1,58 @@
 <!doctype html>
 <html lang="fr">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <script
-        src="https://code.jquery.com/jquery-3.4.1.js"
-        integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
-        crossorigin="anonymous"></script>
-    <title>ChatBot</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+  <title>ChatBot</title>
 </head>
+
 <body>
-<div id="messages"></div>
-<form action="javascript:sendMessage()" method="post">
+  <div id="messages"></div>
+  <form action="javascript:sendMessage()" method="post">
     <input type="text" name="login" id="login" placeholder="login">
     <input type="text" name="message" id="message" placeholder="message">
     <button type="submit">send</button>
-    <input type="text" name="url" id="url" placeholder="url">
-</form>
-<script>
-  let $login = $("#login");
-  let $message = $("#message");
-  let $messages = $("#messages");
-  let $url = $("#url");
+    <select id="bot_select"> </select> <br>
+  </form>
+  <script>
+    let $login = $("#login");
+    let $message = $("#message");
+    let $messages = $("#messages");
+    let $bot_select = $("#bot_select");
 
-  function addMessage(name, message) {
-    $messages.append(name+" : "+message+"<br>");
-  }
+    // Create chatbot dropdown selection
+    $.get("rest/chatbot", function(data, status) {
+      for (chatbot of Object.values(data)) {
+        if (chatbot && chatbot.web == "on")
+          $bot_select.append(new Option(chatbot.name + "(" + chatbot.id + ")", chatbot.url));
+      }
+    })
 
-  function sendMessage(){
-    addMessage($login.val(), $message.val());
-    let message = "login="+$login.val()+"&message="+ $message.val();
-    $.ajax({
-      type: "POST",
-      url: $url.val(),
-      data: message,
-      success: success
-    });
-    function success(data) {
-      addMessage(data.name, data.message)
+    function addMessage(name, message) {
+      $messages.append(name + " : " + message + "<br>");
     }
-  }
-</script>
+
+    function sendMessage() {
+      if ($login.val() == "" || $message.val() == "")
+        return
+      addMessage($login.val(), $message.val());
+      let message = "login=" + $login.val() + "&message=" + $message.val();
+
+      $.ajax({
+        type: "POST",
+        url: $bot_select.children("option:selected").val(),
+        data: message,
+        success: success
+      });
+
+      function success(data) {
+        addMessage(data.name, data.message)
+      }
+    }
+  </script>
 </body>
+
 </html>
