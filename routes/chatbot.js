@@ -52,7 +52,7 @@ function addCerveau(id, cerveau) {
     rive.sortReplies();
     chatbots[id].info.cerveau = cerveau;
     chatbots[id].rive = rive;
-    console.log("rive finished loading")
+    console.log("Rive " + cerveau + " for Chatbot(" + id + ") loaded")
   }).catch(loading_error);
 }
 
@@ -80,11 +80,10 @@ function setupWeb(id) {
   });
 
   let port = BASE_BOT_PORT + id;
-  appBot.listen(port, () => {
-    console.log("bot '" + id + "' has started running on port " + port);
+  // Save server to close it later if needed
+  chatbots[id].web = appBot.listen(port, () => {
+    console.log("Chatbot(" + id + ") web server opened on port " + port);
   });
-
-  chatbots[id].web = appBot;
   chatbots[id].info.web = "on";
 }
 
@@ -100,14 +99,21 @@ router.post('/', (req, res) => {
 });
 
 router.post('/:id', (req, res) => {
+  let id = req.params.id
   var modified = [];
   if (req.body.cerveau !== undefined && chatbots[id].info.cerveau !== req.body.cerveau) {
     addCerveau(id, req.body.cerveau);
     modified.push("cerveau:" + req.body.cerveau)
   }
   if (req.body.web !== undefined && chatbots[id].info.web !== req.body.web) {
-    setupWeb(id);
-    modified.push("web:on")
+    if (req.body.web == "off") {
+      chatbots[id].info.web = "off"
+      chatbots[id].web.close()
+      console.log("Chatbot(" + id + ") web server closed");
+    } else {
+      setupWeb(id);
+    }
+    modified.push("web: " + req.body.web)
   }
   notif(res, "bot '" + id + "' modified (" + modified.join(",") + ")");
 });

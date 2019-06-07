@@ -133,13 +133,9 @@
     let id = id_modal.value
     let cerveau = cerveau_modal.options[cerveau_modal.selectedIndex].value
     let web = web_modal.checked ? "on" : "off"
-    // console.log("id : " + id);
-    // console.log("cerveau : " + cerveau);
-    // console.log("web : " + web);
     $.post("rest/chatbot/" + id, {
-      cerveau: cerveau
+      cerveau: cerveau, web: web
     }, function(data, status) {
-      console.log("callback");
       modal.style.display = "none"
       updateChatbotTable()
     })
