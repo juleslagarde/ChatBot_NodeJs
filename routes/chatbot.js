@@ -75,11 +75,11 @@ function setupWeb(id) {
     console.log("POST " + JSON.stringify(req.body));
 
     chatbots[id].rive.reply(login, message).then(function(reply) {
-      res.send(reply);
+      res.send({name: chatbots[id].info.name, message: reply});
     });
   });
 
-  let port = BASE_BOT_PORT + id;
+  let port = BASE_BOT_PORT + parseInt(id);
   // Save server to close it later if needed
   chatbots[id].web = appBot.listen(port, () => {
     console.log("Chatbot(" + id + ") web server opened on port " + port);
