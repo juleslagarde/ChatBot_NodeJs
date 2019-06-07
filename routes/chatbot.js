@@ -21,11 +21,6 @@ fs.readdir("cerveaux/", (err, files) => {
   });
 });
 
-// Creates one default chatbot
-var id = createChatbot("Steeve");
-addCerveau(id, "simple")
-setupWeb(id);
-
 function loading_error(error, filename, lineno) {
   console.log("Error when loading files: " + error);
 }
@@ -151,8 +146,11 @@ router.post('/', (req, res) => {
 });
 
 router.post('/:id', (req, res) => {
-  let id = req.params.id
-  var modified = [];
+  let modified = [];
+  let id = parseInt(req.params.id);
+  if(chatbots[id]===undefined)
+    res.send("chatbot '"+id+"' not found");
+  console.log(id, chatbots[id].info);
   if (req.body.cerveau !== undefined && chatbots[id].info.cerveau !== req.body.cerveau) {
     addCerveau(id, req.body.cerveau);
     modified.push("cerveau:" + req.body.cerveau)

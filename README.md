@@ -2,7 +2,7 @@
 Interface web de gestion de chatbots (rivescript)
 
 ### Intallation
-`$ npm init`
+`$ npm install`
  
 ### Lancement de l'application
 `$ node start.js`
@@ -13,4 +13,4 @@ _________________________________________________
 Une fois un chatbot configuré pour mastodon (token d'accès et url),
 la syntaxe de communication est **@LoginChatBot message**.
 
-![alt text](http://i.ibb.co/KhS4ZTt/mastodon-chatbot.png)
+![image mastodon](http://i.ibb.co/KhS4ZTt/mastodon-chatbot.png)

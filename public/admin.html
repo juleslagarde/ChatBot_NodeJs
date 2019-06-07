@@ -38,9 +38,9 @@
           <label>Url</label>
           <input id="url_modal" disabled=true> <br>
           <label> Web </label>
-          <input type="radio" name="group_service" id="web_modal" onclick='handleRadioClick();'> <br>
+          <input type="checkbox" name="group_service" id="web_modal" onclick='handleRadioClick();'> <br>
           <label> Mastodon </label>
-          <input type="radio" name="group_service" id="mastodon_modal" onclick='handleRadioClick();'> <br>
+          <input type="checkbox" name="group_service" id="mastodon_modal" onclick='handleRadioClick();'> <br>
           <div id="mastodon_info" style="display: none">
             <label>Mastodon url</label>
             <input id="mastodon_url_modal" value="https://botsin.space"> <br>
@@ -48,7 +48,7 @@
             <input id="access_token_modal"> <br>
           </div>
           <label> Discord </label>
-          <input type="radio" name="group_service" id="discord_modal" onclick='handleRadioClick();' disabled=true> <br>
+          <input type="checkbox" name="group_service" id="discord_modal" onclick='handleRadioClick();' disabled=true> <br>
           <button type="submit">Valider</button>
         </form>
       </div>
