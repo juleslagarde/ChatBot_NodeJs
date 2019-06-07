@@ -1,6 +1,8 @@
 const bodyParser = require('body-parser');
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const RiveScript = require("rivescript")
 const Mastodon = require('mastodon-api');
 
 const BASE_BOT_PORT = 4001;
@@ -8,16 +10,24 @@ const BASE_BOT_PORT = 4001;
 const router = express.Router();
 
 let chatbots = global.chatbots = {};
-let cerveaux = global.cerveaux = ["simple", "simple_copy"];
+let cerveaux = global.cerveaux = [];
 let interfaces = global.interfaces = ["Web", "Mastodon", "Discord"];
-
 chatbots.next_id = 0;
 
-const RiveScript = require("rivescript")
+// Stores rive files name
+fs.readdir("cerveaux/", (err, files) => {
+  files.forEach(file => {
+    cerveaux.push(file.split('.')[0])
+  });
+});
+
+// Creates one default chatbot
+var id = createChatbot("Steeve");
+addCerveau(id, "simple")
+setupWeb(id);
 
 function loading_error(error, filename, lineno) {
   console.log("Error when loading files: " + error);
-
 }
 
 function createChatbot(name) {
@@ -58,15 +68,11 @@ function addCerveau(id, cerveau) {
   }).catch(loading_error);
 }
 
-for (let i = 0; i < 2; i++) {
-  var id = createChatbot("Steeve");
-  addCerveau(id, "simple")
-  setupWeb(id);
-}
-
 function serviceMastodon(id, enable, access_token, url) {
   let chatbot = chatbots[id]
   if (enable != chatbot.info.mastodon) {
+    if (!access_token || !url)
+      return
     chatbot.info.mastodon = enable
     if (enable == "on") {
       // New mastodon connection
@@ -140,6 +146,7 @@ router.post('/', (req, res) => {
   let name = (req.body.name !== '') ? req.body.name : "Steeve"
   var id = createChatbot(name)
   addCerveau(id, "simple")
+  setupWeb(id)
   notif(res, "bot created (id:" + id + ")");
 });
 
